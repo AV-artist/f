@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Two-way File Share</title>
+<style>
+:root{--bg:#070c1f;--bg2:#0f1840;--pn:rgba(16,24,58,.75);--pn2:rgba(30,44,100,.5);--ln:#2a3b82;--ink:#eaf0ff;--mut:#9aa8d6;--ac:#3b82ff;--ok:#2fd27e;--bad:#ff4d5e;--warn:#f5b73b;--glow:0 0 16px rgba(59,130,255,.4);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme=light]{--bg:#e4eafb;--bg2:#f5f8ff;--pn:rgba(255,255,255,.88);--pn2:#eaf0ff;--ln:#c2cdef;--ink:#101a3d;--mut:#55628f;--glow:0 0 12px rgba(59,130,255,.25)}
+*{box-sizing:border-box}html{height:100%}
+body{margin:0;min-height:100%;background:radial-gradient(900px 500px at 15% -10%,rgba(59,90,255,.28),transparent),var(--bg);color:var(--ink);font:13px/1.4 "Segoe UI Variable","Segoe UI",Inter,system-ui,sans-serif;display:flex;justify-content:center;padding:14px}
+button{font:inherit;color:inherit;cursor:pointer}input,textarea{font:inherit;color:var(--ink)}
+:focus-visible{outline:2px solid #8ab4ff;outline-offset:2px}
+.win{width:min(1180px,100%);min-height:660px;border:1px solid var(--ln);border-radius:14px;background:linear-gradient(160deg,var(--bg2),var(--bg));box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden;display:flex;flex-direction:column}
+.tb{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--ln);flex-wrap:wrap}
+.logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6a4dff,#2f8bff);display:grid;place-items:center;color:#fff;box-shadow:var(--glow)}
+.tb b{font-size:16px;display:block;line-height:1.1}.sub{color:var(--mut);font-size:11px}.sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--ln);background:var(--pn);border-radius:8px;padding:5px 10px;font-size:11px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--bad)}.dot.ok{background:var(--ok)}
+.ib{width:30px;height:30px;border-radius:8px;border:1px solid var(--ln);background:var(--pn);display:grid;place-items:center}
+.ib.on{border-color:var(--ac);box-shadow:var(--glow)}
+.body{display:grid;grid-template-columns:150px 1fr;flex:1;min-height:0}.win.min .body{display:none}
+nav{padding:10px;display:grid;gap:4px;align-content:start;border-right:1px solid var(--ln)}
+.ni{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;border:0;background:none;text-align:left}
+.ni:hover{background:var(--pn2)}.ni.on{background:linear-gradient(90deg,#2f6bff,#3a45e6);color:#fff;box-shadow:var(--glow)}
+main{padding:12px 14px;overflow:auto;min-width:0}
+.pn{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:14px}
+.h2{font-size:15px;font-weight:650}.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;gap:6px;align-items:center;justify-content:center;padding:7px 12px;border:1px solid #3a5ac0;background:rgba(59,130,255,.14);border-radius:8px}
+.btn:hover{background:rgba(59,130,255,.3)}.btn.pp{border-color:#7b4dff;background:rgba(123,77,255,.16)}
+.btn.pri{background:linear-gradient(90deg,#3b6bff,#6a4dff);border:0;color:#fff;font-weight:600;font-size:14px;padding:11px;box-shadow:var(--glow)}
+.btn:disabled{opacity:.6}
+.tg{width:34px;height:18px;border-radius:10px;border:0;background:#4a5280;position:relative;flex:none}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
+.tg.on{background:var(--ac)}.tg.on::after{left:18px}
+.hero{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:10px;padding:24px;background:linear-gradient(110deg,#141c5a,#35208a);color:#fff;min-height:200px;overflow:hidden}
+.hero h1{font-size:27px;line-height:1.2;margin:0 0 12px}.hero p{margin:0;max-width:44ch;color:#d5dcff}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.ac{position:relative;border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:16px;min-height:130px;text-align:left;color:#fff;display:grid;align-content:space-between;gap:12px}
+.a1{background:linear-gradient(135deg,#2563ff,#3a3fd9)}.a2{background:linear-gradient(135deg,#0f9d6e,#1a5fd0)}.a3{background:linear-gradient(135deg,#7a3df0,#4b2fd0)}
+.ac:hover{filter:brightness(1.12)}.ac b{font-size:16px}.ac .sub{color:#dfe6ff;font-size:12px}
+.tile{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.2);display:grid;place-items:center}
+.go{position:absolute;right:14px;bottom:14px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.5);display:grid;place-items:center}
+.dg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.dc{border:1px solid var(--ln);background:var(--pn2);border-radius:10px;padding:12px;display:grid;gap:10px;cursor:pointer;text-align:left}
+.dc:hover,.dc.cn{border-color:var(--ac);box-shadow:var(--glow)}
+.dc .top{display:flex;gap:10px;align-items:flex-start}.dc .top>div{flex:1;min-width:0}
+.os{width:36px;height:36px;display:grid;place-items:center;font-size:26px}.os svg{width:30px;height:30px}.apl{filter:grayscale(1) brightness(2.2)}
+.mb{border:0;background:none;color:var(--mut);padding:2px 6px}
+.st{justify-self:start;border-radius:6px;padding:2px 9px 2px 7px;font-size:11px;display:inline-flex;gap:6px;align-items:center;border:1px solid}
+.st.on{color:var(--ok);background:rgba(47,210,126,.12)}.st.idle{color:var(--warn);background:rgba(245,183,59,.12)}.st.off{color:var(--bad);background:rgba(255,77,94,.12)}
+.st i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.auto{display:flex;align-items:center;gap:10px;border:1px solid var(--ln);border-radius:10px;padding:10px 12px;background:var(--pn2)}
+.ib2{width:40px;height:40px;border-radius:50%;border:1px solid var(--ac);display:grid;place-items:center;color:#8ab4ff;background:rgba(59,130,255,.12);flex:none}
+.sg{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-top:12px}
+.tabs{display:flex;border:1px solid var(--ln);border-radius:8px;margin-top:12px;overflow:auto}
+.tabs button{flex:1;border:0;border-right:1px solid var(--ln);background:none;padding:8px 6px;display:flex;gap:6px;align-items:center;justify-content:center;white-space:nowrap;font-size:12px;color:var(--mut)}
+.tabs button.on{background:rgba(59,130,255,.22);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ac)}
+.dz{border:1.5px dashed var(--ac);border-radius:10px;min-height:190px;display:grid;place-content:center;justify-items:center;gap:8px;text-align:center;padding:14px;background:rgba(59,130,255,.05)}
+.dz.over{background:rgba(59,130,255,.2)}.dz a{color:#c46bff;cursor:pointer}
+textarea.t,input.t{width:100%;background:rgba(0,0,0,.18);border:1px solid var(--ln);border-radius:8px;padding:9px}textarea.t{min-height:130px;resize:vertical}
+.opt{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.opt .ib2{width:34px;height:34px;border-radius:9px}
+.fl{display:grid;gap:6px;margin-top:8px;max-height:300px;overflow:auto}
+.fr{display:flex;gap:10px;align-items:center;border:1px solid var(--ln);background:var(--pn2);border-radius:8px;padding:6px 8px}
+.fr>div{flex:1;min-width:0}.fr b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;color:#fff;flex:none}
+.x{border:1px solid var(--ln);background:none;border-radius:6px;width:22px;height:22px;color:var(--mut);line-height:1}
+.rg{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-top:12px}
+.qrw{display:grid;gap:8px;justify-items:center;text-align:center}.qrw canvas{background:#fff;border-radius:8px;padding:6px;width:168px;height:168px;image-rendering:pixelated}
+.cd{display:flex;gap:8px;margin:12px 0}.cd span{width:44px;height:50px;border:1px solid var(--ln);border-radius:8px;display:grid;place-items:center;font-size:22px;background:var(--pn2)}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.opts>div{display:flex;gap:8px;align-items:center;border:1px solid var(--ln);background:var(--pn2);border-radius:8px;padding:9px;font-size:12px}.opts>div span{flex:1}
+.cg{display:grid;grid-template-columns:240px 1fr;gap:12px;height:560px}
+.cl{display:grid;gap:6px;align-content:start;overflow:auto}
+.ci{display:flex;gap:10px;align-items:center;border:0;background:none;border-radius:8px;padding:8px;text-align:left}.ci.on{background:rgba(59,130,255,.25)}
+.ci small{display:block;font-size:11px}.on-t{color:var(--ok)}.idle-t{color:var(--warn)}.off-t{color:var(--bad)}
+.cp{display:flex;flex-direction:column;min-height:0;padding:0}
+.ch{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--ln)}
+#cm{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.bb{max-width:70%;padding:8px 12px;border-radius:10px;background:var(--pn2);align-self:flex-start;word-break:break-word}.bb.me{background:#2f6bff;color:#fff;align-self:flex-end}
+.tm{font-size:10px;color:var(--mut);margin-bottom:6px}.tm.me{align-self:flex-end}
+.fc{border:1px solid var(--ok);background:rgba(47,210,126,.1);border-radius:10px;padding:8px 12px;display:flex;gap:10px;align-items:center;align-self:flex-end;min-width:240px}
+.cin{display:flex;gap:8px;padding:10px;border-top:1px solid var(--ln);align-items:center;position:relative}.cin input{flex:1;background:rgba(0,0,0,.18);border:1px solid var(--ln);border-radius:8px;padding:9px}
+.emo{position:absolute;bottom:56px;right:60px;display:none;gap:4px;background:var(--bg2);border:1px solid var(--ln);border-radius:8px;padding:6px}.emo.show{display:flex}.emo button{border:0;background:none;font-size:18px}
+.hg{display:grid;grid-template-columns:1fr 340px;gap:12px}
+.fb{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}.fb button{border:1px solid var(--ln);background:none;border-radius:5px;padding:3px 9px;font-size:11px}.fb button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.hr{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--ln)}.hr>div:nth-child(2){flex:1;min-width:0}.hr .sub:last-of-type{white-space:nowrap}
+.tl{display:flex;gap:10px;align-items:center;border:1px solid var(--ln);border-radius:9px;padding:9px 11px;margin-top:8px;background:var(--pn2);text-align:left;width:100%}
+.tl b{display:block}.tl .sub{font-size:11px}
+#pop{position:fixed;display:none;z-index:50;background:var(--bg2);border:1px solid var(--ln);border-radius:9px;padding:4px;min-width:150px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+#pop button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 10px;border-radius:6px}#pop button:hover{background:var(--pn2)}
+#mod{position:fixed;inset:0;background:rgba(0,0,10,.6);display:none;place-items:center;z-index:60;padding:14px}#mod.show{display:grid}
+.md{background:var(--bg2);border:1px solid var(--ln);border-radius:12px;padding:16px;width:min(460px,100%);display:grid;gap:12px}
+#toast{position:fixed;right:16px;bottom:16px;display:grid;gap:6px;z-index:70}
+.ts{background:var(--bg2);border:1px solid var(--ac);border-radius:9px;padding:9px 14px;box-shadow:var(--glow)}.ts.bad{border-color:var(--bad)}
+@media(max-width:860px){.body{grid-template-columns:1fr}nav{display:flex;overflow:auto;border-right:0;border-bottom:1px solid var(--ln)}.ni{white-space:nowrap}
+.hero,.acts,.dg,.sg,.rg,.hg,.opts{grid-template-columns:1fr}.cg{grid-template-columns:1fr;height:auto}.cp{height:480px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body>
+<div class="win" id="win">
+ <header class="tb">
+  <div class="logo" id="lg"></div><div><b>Two-way File Share</b><span class="sub" id="tsub"></span></div><span class="sp"></span>
+  <span class="chip"><i class="dot" id="cdot"></i><span id="ctx">Not connected</span></span>
+  <button class="ib" data-a="theme" data-t="dark" id="bd" aria-label="Dark theme"></button>
+  <button class="ib" data-a="theme" data-t="light" id="bl" aria-label="Light theme"></button>
+  <span class="chip" id="clk"></span>
+  <button class="ib" data-a="min" aria-label="Minimize" id="b1"></button><button class="ib" data-a="max" aria-label="Maximize" id="b2"></button><button class="ib" data-a="close" aria-label="Close" id="b3"></button>
+ </header>
+ <div class="body"><nav id="nav"></nav><main id="main"></main></div>
+</div>
+<input type="file" id="fi" multiple hidden><input type="file" id="fd" webkitdirectory hidden><input type="file" id="fa" multiple hidden accept=".apk,.exe,.msi,.ipa,.dmg,.deb,.appimage"><input type="file" id="fc" multiple hidden accept="image/*,video/*" capture="environment"><input type="file" id="fm" multiple hidden>
+<div id="pop"></div><div id="mod"></div><div id="toast"></div>
+
+<script>
+(function(){
+const P={home:"M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z",send:"M22 2L11 13M22 2l-7 20-4-9-9-4z",download:"M12 3v12m0 0l-4-4m4 4l4-4M4 21h16",monitor:"M3 4h18v12H3zM8 20h8M12 16v4",message:"M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-6.4A8 8 0 1 1 21 12z",clock:"M12 7v5l3 2M21 12a9 9 0 1 1-3-6.7M21 3v5h-5",settings:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12l2 1.5-2 3.4-2.4-1a7 7 0 0 1-2.2 1.3L14 21h-4l-.3-2.8a7 7 0 0 1-2.2-1.3l-2.4 1-2-3.4 2-1.5a7 7 0 0 1 0-2.6l-2-1.5 2-3.4 2.4 1a7 7 0 0 1 2.2-1.3L10 3h4l.3 2.8a7 7 0 0 1 2.2 1.3l2.4-1 2 3.4-2 1.5c.1.4.1.9.1 1z",info:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v6M12 7.5v.01",plus:"M12 5v14M5 12h14",qr:"M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM20 14v7h-3M14 20h.01",code:"M16 18l6-6-6-6M8 6l-6 6 6 6",file:"M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5",folder:"M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z",cloud:"M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8M12 12v8m0-8l-3 3m3-3l3 3",x:"M6 6l12 12M18 6L6 18",copy:"M9 9h11v11H9zM5 15V4h11",link:"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1",wifi:"M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5v.01",back:"M19 12H5m6-6l-6 6 6 6",right:"M9 6l6 6-6 6",down:"M6 9l6 6 6-6",moon:"M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z",sun:"M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4",more:"M12 6v.01M12 12v.01M12 18v.01",search:"M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",phone:"M6 3h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 12l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2",clip:"M9 4h6v3H9zM7 5H5v16h14V5h-2",text:"M5 6h14M12 6v13M9 19h6",camera:"M4 8h3l2-3h6l2 3h3v12H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z",check:"M5 12l5 5 9-10",lock:"M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4",clipx:"M20 11l-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 7",smile:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 14a5 5 0 0 0 8 0M9 9.5v.01M15 9.5v.01",cast:"M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6M2 12a9 9 0 0 1 8 8M2 16a5 5 0 0 1 4 4M2 20h.01",apps:"M5 9h14v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2zM8 4l1.5 3M16 4l-1.5 3M9 13v.01M15 13v.01",play:"M8 5v14l11-7z",min:"M5 12h14",max:"M5 5h14v14H5z",swap:"M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"};
+const ic=(n,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${P[n]}"/></svg>`;
+const $=(s,r=document)=>r.querySelector(s);
+const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const fmt=n=>n>=1e9?(n/1e9).toFixed(1)+' GB':n>=1e6?Math.round(n/1e6)+' MB':Math.max(1,Math.round(n/1e3))+' KB';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tnow=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+const dnow=()=>new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+', '+tnow();
+const me=Math.random().toString(36).slice(2,10),code=(()=>{const saved=ld('tws-room-code','');if(/^\d{6}$/.test(String(saved)))return String(saved);const fresh=String(Math.floor(1e5+Math.random()*9e5));sv('tws-room-code',fresh);return fresh})();
+const joinParam=new URLSearchParams(location.search).get('join')||((location.hash.match(/(?:^|[#&])c=(\d{6})/)||[])[1]||'');
+let activeRoom=/^\d{6}$/.test(joinParam)?joinParam:code, signalRole=/^\d{6}$/.test(joinParam)?'guest':'host', serverInfo=null, ws=null, wsRetry=null, wsGeneration=0;
+const rtcPeers=new Map(),channels=new Map(),pendingIce=new Map(),incomingFiles=new Map();
+let page='home',tab=0,conn=null,cur=null,flt='All',q='',chat=null,busy=0,zip=0,encr=0,pw='',dirH=null,stream=null;
+const opts=Object.assign({auto:0,acc:1,note:1,org:1,open:0},ld('opts',{}));
+let uname=ld('uname','Windows PC'),saveName=ld('save','Downloads');
+let devs=(Array.isArray(ld('devs',null))?ld('devs',null).filter(d=>d&&d.here):[]) ; if(!devs.length)devs=[{id:'pc',n:uname||'Windows PC',m:'This device',ip:'Local device',s:'on',os:'win',here:1}];
+const dv=id=>devs.find(d=>d.id===id);
+const saveDevs=()=>sv('devs',devs.filter(d=>d.here));
+let files=[];
+const kind=n=>/\.(apk|exe|msi|ipa|dmg|deb|appimage)$/i.test(n)?'app':/\.txt$/i.test(n)?'text':/\.url$/i.test(n)?'link':'file';
+let hist=[];
+const ch={};
+const fcls=n=>{const e=n.includes('.')?n.split('.').pop().toLowerCase():'';return !e?['#f5a623','folder']:/zip|gz|rar|7z/.test(e)?['#f59e0b','file']:/mkv|mp4|mov|avi/.test(e)?['#7a3df0','play']:/pdf/.test(e)?['#e5484d','file']:/apk|exe|msi|ipa|dmg|deb/.test(e)?['#22a55e','apps']:/png|jpe?g|gif|webp/.test(e)?['#14b8a6','camera']:/txt/.test(e)?['#6366f1','text']:['#5b6aa8','file']};
+const fico=n=>{const c=fcls(n);return `<span class="fi" style="background:${c[0]}">${ic(c[1],16)}</span>`};
+const osi=o=>o==='win'?`<svg viewBox="0 0 24 24"><path fill="#2ea0ff" d="M3 5l8-1v7H3zM12 4l9-1.500V11h-9zM3 12h8v7l-8-1zM12 12h9v8.500L12 19z"/></svg>`:o==='and'?'<span style="color:#3ddc84">🤖</span>':o==='app'?'<span class="apl">🍎</span>':o==='lin'?'🐧':ic('monitor',30);
+const stl={on:'Online',idle:'Idle',off:'Offline'};
+function toast(t,bad){const e=document.createElement('div');e.className='ts'+(bad?' bad':'');e.textContent=t;$('#toast').append(e);setTimeout(()=>e.remove(),2800)}
+function copy(t){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('Copied'),()=>copyFallback(t));return}copyFallback(t)}
+function copyFallback(t){const el=document.createElement('textarea');el.value=String(t);el.setAttribute('readonly','');el.style.position='fixed';el.style.opacity='0';el.style.left='-9999px';document.body.append(el);el.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}el.remove();toast(ok?'Copied':'Copy was blocked. Select the URL and copy it manually.',!ok)}
+function pm(a,items){const p=$('#pop');p.innerHTML=items.map((x,i)=>`<button data-i="${i}">${x[0]}</button>`).join('');const r=a.getBoundingClientRect();p.style.display='block';p.style.left=Math.max(6,Math.min(r.left,innerWidth-170))+'px';p.style.top=Math.min(r.bottom+4,innerHeight-items.length*34-10)+'px';p._it=items}
+function modal(t,body,ok,fn){const m=$('#mod');m.innerHTML=`<div class="md" role="dialog" aria-label="${esc(t)}"><div class="row"><span class="h2">${t}</span><span class="sp"></span><button class="x" data-a="mx" aria-label="Close">×</button></div>${body}${ok?`<button class="btn pri" id="mok">${ok}</button>`:''}</div>`;m.classList.add('show');m._f=fn;const f=$('input,textarea',m);if(f)f.focus();if(ok)$('#mok').onclick=()=>{if(fn()!==false)closeMod()}}
+function closeMod(){const m=$('#mod');m.classList.remove('show');m.innerHTML='';if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
+function add(f,path){files.push({n:path||f.webkitRelativePath||f.name,size:f.size,file:f})}
+function addTx(t,nm){if(!t.trim())return toast('Nothing to add','bad');const f=new File([t],nm,{type:'text/plain'});add(f,nm);render()}
+/* ---------- Real cross-device signaling + WebRTC data channel ---------- */
+function deviceName(){return uname||'Device'}
+function upsertPeer(id,n,os='pc'){
+ let d=dv(id);
+ if(!d){d={id,n:n||'Connected device',m:'Connected over local Wi-Fi',ip:'Peer-to-peer',s:'idle',os,peer:1};devs.push(d)}
+ d.n=n||d.n||'Connected device';d.s=channels.get(id)?.readyState==='open'?'on':'idle';
+ if(!ch[id])ch[id]=[];if(!chat)chat=id;
+ return d;
+}
+function sendSignal(to,data){if(ws&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({t:'signal',to,from:me,data}));}
+function joinRoom(room){
+ if(!/^\d{6}$/.test(String(room)))return toast('Connection code must be 6 digits','bad');
+ activeRoom=String(room);signalRole='guest';try{const u=new URL(location.href);u.searchParams.set('join',activeRoom);history.replaceState(null,'',u.toString())}catch(e){}
+ for(const pc of rtcPeers.values()){try{pc.close()}catch(e){}}rtcPeers.clear();channels.clear();pendingIce.clear();incomingFiles.clear();devs=devs.filter(d=>d.here);conn=null;cur=null;chat=null;
+ startSignaling('guest',activeRoom);render();paintQR();
+}
+function startSignaling(role,room){
+ if(location.protocol==='file:'){toast('Start this app with Start-File-Share.bat on the PC first.','bad');return}
+ if(!('RTCPeerConnection' in window)){setConnStatus('This browser does not support WebRTC data channels. Use a current Chrome, Edge, Firefox or Safari browser.','bad');return}
+ signalRole=role||signalRole;activeRoom=String(room||activeRoom);const generation=++wsGeneration;
+ if(wsRetry){clearTimeout(wsRetry);wsRetry=null}
+ if(ws){try{ws.onclose=null;ws.close()}catch(e){}}
+ const proto=location.protocol==='https:'?'wss:':'ws:';
+ const socket=new WebSocket(proto+'//'+location.host+'/ws');ws=socket;
+ socket.onopen=()=>{if(generation!==wsGeneration)return;socket.send(JSON.stringify({t:'join',room:activeRoom,id:me,name:deviceName(),role:signalRole}));setConnStatus('Signaling server connected. Waiting for another device…')};
+ socket.onmessage=async ev=>{if(generation!==wsGeneration)return;let m;try{m=JSON.parse(ev.data)}catch(e){return}await onSignalMessage(m)};
+ socket.onerror=()=>{if(generation===wsGeneration)setConnStatus('Cannot reach local sharing server. Start the server on the PC.','bad')};
+ socket.onclose=()=>{if(generation!==wsGeneration)return;setConnStatus('Reconnecting to sharing server…','bad');wsRetry=setTimeout(()=>startSignaling(signalRole,activeRoom),2500)};
+}
+function setConnStatus(text,bad=false){const el=$('#qrstatus');if(el&&page==='recv')el.textContent=text;}
+async function onSignalMessage(m){
+ if(m.t==='welcome'){
+  for(const p of (m.peers||[])){upsertPeer(p.id,p.name);if(signalRole==='host'&&p.role==='guest')createOffer(p.id).catch(()=>toast('Could not start WebRTC connection','bad'))}
+  render();return;
+ }
+ if(m.t==='peer-joined'){
+  upsertPeer(m.peer.id,m.peer.name);toast((m.peer.name||'Device')+' joined this room');
+  if(signalRole==='host'&&m.peer.role==='guest')createOffer(m.peer.id).catch(e=>toast('WebRTC offer failed: '+e.message,'bad'));
+  render();return;
+ }
+ if(m.t==='peer-left'){
+  const d=dv(m.id);if(d){devs=devs.filter(x=>x.id!==m.id);saveDevs()}
+  const pc=rtcPeers.get(m.id);if(pc){try{pc.close()}catch(e){}}rtcPeers.delete(m.id);channels.delete(m.id);pendingIce.delete(m.id);incomingFiles.delete(m.id);
+  if(conn===m.id)conn=null;if(cur===m.id)cur=null;if(chat===m.id)chat=null;render();toast('A device disconnected');return;
+ }
+ if(m.t==='signal')await receiveRtcSignal(m.from,m.data||{});
+}
+function getPeer(peerId){let pc=rtcPeers.get(peerId);if(pc)return pc;
+ pc=new RTCPeerConnection({iceServers:[]});rtcPeers.set(peerId,pc);pendingIce.set(peerId,[]);
+ pc.onicecandidate=e=>{if(e.candidate)sendSignal(peerId,{candidate:e.candidate})};
+ pc.ondatachannel=e=>setupDataChannel(peerId,e.channel);
+ pc.onconnectionstatechange=()=>{
+  const d=dv(peerId);if(d){d.s=pc.connectionState==='connected'?'on':pc.connectionState==='failed'?'off':'idle'}
+  if(pc.connectionState==='failed')toast('Direct connection failed. Check both devices are on the same Wi-Fi and allow the PC firewall.','bad');
+  if(pc.connectionState==='connected'&&page==='dev')render();
+ };
+ pc.oniceconnectionstatechange=()=>{if(pc.iceConnectionState==='failed')toast('Network path failed. Try the same Wi-Fi network on both devices.','bad')};
+ return pc;
+}
+function setupDataChannel(peerId,dc){
+ channels.set(peerId,dc);dc.binaryType='arraybuffer';dc.bufferedAmountLowThreshold=512*1024;
+ const d=upsertPeer(peerId,(dv(peerId)||{}).n||'Connected device');
+ dc.onopen=()=>{d.s='on';conn=peerId;cur=peerId;chat=peerId;toast('Connected securely to '+d.n);render()};
+ dc.onclose=()=>{d.s='idle';if(conn===peerId)conn=null;render()};
+ dc.onerror=()=>toast('Data channel error. Reconnect the device.','bad');
+ dc.onmessage=e=>handleDataMessage(peerId,e.data);
+}
+async function createOffer(peerId){const pc=getPeer(peerId);if(!channels.has(peerId)&&signalRole==='host')setupDataChannel(peerId,pc.createDataChannel('tws-data',{ordered:true}));const offer=await pc.createOffer();await pc.setLocalDescription(offer);sendSignal(peerId,{sdp:pc.localDescription});}
+async function receiveRtcSignal(peerId,data){
+ const pc=getPeer(peerId);
+ if(data.sdp){await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));const queued=pendingIce.get(peerId)||[];for(const c of queued){try{await pc.addIceCandidate(new RTCIceCandidate(c))}catch(e){}}pendingIce.set(peerId,[]);
+  if(data.sdp.type==='offer'){const answer=await pc.createAnswer();await pc.setLocalDescription(answer);sendSignal(peerId,{sdp:pc.localDescription})}
+ }
+ if(data.candidate){if(pc.remoteDescription&&pc.remoteDescription.type){try{await pc.addIceCandidate(new RTCIceCandidate(data.candidate))}catch(e){}}else pendingIce.get(peerId).push(data.candidate)}
+}
+async function waitForChannel(dc){while(dc.readyState==='open'&&dc.bufferedAmount>2*1024*1024)await new Promise(r=>setTimeout(r,25));if(dc.readyState!=='open')throw new Error('Device disconnected during transfer')}
+function handleDataMessage(peerId,data){
+ if(typeof data==='string'){
+  let m;try{m=JSON.parse(data)}catch(e){return}
+  if(m.t==='chat'){(ch[peerId]=ch[peerId]||[]).push({m:0,x:String(m.text||''),t:tnow()});if(page==='msg'&&chat===peerId)paintChat();else toast('Message received from '+(dv(peerId)||{n:'device'}).n);return}
+  if(m.t==='file-start'){incomingFiles.set(peerId,{name:m.name,size:m.size,type:m.type||'application/octet-stream',chunks:[],received:0});toast('Receiving '+m.name+'…');return}
+  if(m.t==='file-end'){
+   const it=incomingFiles.get(peerId);if(!it)return;incomingFiles.delete(peerId);
+   const b=new Blob(it.chunks,{type:it.type});b.arrayBuffer().then(buf=>got({from:peerId,fromName:(dv(peerId)||{n:'Device'}).n,name:it.name,size:buf.byteLength,type:it.type,buf})).catch(()=>toast('Could not assemble received file','bad'));return;
+  }
+  return;
+ }
+ const f=incomingFiles.get(peerId);if(!f)return;
+ try{const u=new Uint8Array(data);if(u.length&&u[0]===1){const chunk=u.slice(1);f.chunks.push(chunk);f.received+=chunk.length}}catch(e){}
+}
+async function stream_(buf,T){return new Response(new Blob([buf]).stream().pipeThrough(new T('gzip'))).arrayBuffer()}
+const kd=async(p,s)=>crypto.subtle.deriveKey({name:'PBKDF2',salt:s,iterations:1e5,hash:'SHA-256'},await crypto.subtle.importKey('raw',new TextEncoder().encode(p),'PBKDF2',0,['deriveKey']),{name:'AES-GCM',length:256},0,['encrypt','decrypt']);
+async function enc(b,p){const s=crypto.getRandomValues(new Uint8Array(16)),i=crypto.getRandomValues(new Uint8Array(12));return new Blob([s,i,await crypto.subtle.encrypt({name:'AES-GCM',iv:i},await kd(p,s),b)]).arrayBuffer()}
+async function dec(b,p){return crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(b.slice(16,28))},await kd(p,new Uint8Array(b.slice(0,16))),b.slice(28))}
+async function fin(it,buf){let n=it.name;if(n.endsWith('.gz')){buf=await stream_(buf,DecompressionStream);n=n.slice(0,-3)}it.name=n;it.size=buf.byteLength;it.blob=new Blob([buf]);it.url=URL.createObjectURL(it.blob)}
+async function got(m){const who=(dv(m.from)||{n:m.fromName}).n;const it={name:m.name,size:m.size,dir:'Received',who,d:dnow(),k:kind(m.name),pending:!opts.acc};if(m.name.endsWith('.enc')){it.raw=m.buf;it.name=m.name.slice(0,-4);it.locked=1}else await fin(it,m.buf);hist.unshift(it);if(opts.acc&&!it.locked)await save(it);if(opts.note)toast('Received '+it.name+' from '+who);if(opts.open)toast('Browsers can’t open folders; file saved to your downloads');if(page==='hist')paintHist()}
+async function save(it){try{if(dirH){let d=dirH;if(opts.org)d=await d.getDirectoryHandle(it.who.replace(/[^\w ]/g,'')||'device',{create:true});const w=await(await d.getFileHandle(it.name,{create:true})).createWritable();await w.write(it.blob);await w.close()}else{const a=document.createElement('a');a.href=it.url;a.download=it.name;document.body.append(a);a.click();a.remove()}it.pending=0}catch(e){toast('Could not save '+it.name,'bad')}}
+/* ---------- Send real files over the selected WebRTC peer ---------- */
+async function send(){
+ const peerId=cur||conn, t=dv(peerId), dc=channels.get(peerId);
+ if(!files.length)return toast('Choose files first','bad');
+ if(!t||!dc||dc.readyState!=='open')return toast('Scan the QR with the other device and wait for Connected before sending.','bad');
+ if(encr&&!pw)return toast('Set a password first','bad');if(busy)return;busy=1;
+ const btn=$('#sn');let sentN=0;
+ try{
+  for(const f of files){
+   if(!f.file)throw new Error('This item is not a real file. Clear the list and choose files from your device.');
+   let buf=await f.file.arrayBuffer(),nm=f.n;
+   if(zip){buf=await stream_(buf,CompressionStream);nm+='.gz'}
+   if(encr){buf=await enc(buf,pw);nm+='.enc'}
+   dc.send(JSON.stringify({t:'file-start',name:nm,size:buf.byteLength,type:f.file.type||'application/octet-stream'}));
+   const bytes=new Uint8Array(buf),chunkSize=48*1024;
+   for(let off=0;off<bytes.length;off+=chunkSize){await waitForChannel(dc);const part=bytes.subarray(off,Math.min(off+chunkSize,bytes.length));const packet=new Uint8Array(part.length+1);packet[0]=1;packet.set(part,1);dc.send(packet.buffer);if(btn)btn.textContent='Sending… '+Math.round(Math.min(1,(off+part.length)/Math.max(1,bytes.length))*100)+'%'}
+   await waitForChannel(dc);dc.send(JSON.stringify({t:'file-end'}));
+   hist.unshift({name:f.n,size:f.size,dir:'Sent',who:t.n,d:dnow(),k:kind(f.n)});sentN++;
+  }
+  toast(`Sent ${sentN} item${sentN>1?'s':''} to ${t.n}`);files=[];render();
+ }catch(e){toast('Transfer failed: '+(e.message||'connection lost'),'bad')}
+ finally{busy=0;if(btn)btn.textContent='Send Now'}
+}
+/* ---------- views ---------- */
+const art=`<svg viewBox="0 0 340 190" width="100%" style="max-height:190px" aria-hidden="true"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f7bff"/><stop offset="1" stop-color="#9b4dff"/></linearGradient></defs><g fill="none" stroke="#7fe3ff" stroke-width="3" stroke-linecap="round"><path d="M215 30a30 30 0 0 1 40 0M224 40a18 18 0 0 1 22 0"/><path d="M200 120a35 35 0 0 1 55-15M262 128a35 35 0 0 1-55 15" stroke="#38c8ff" stroke-width="5"/></g><circle cx="235" cy="48" r="4" fill="#7fe3ff"/><rect x="40" y="55" width="150" height="95" rx="7" fill="#101a4a" stroke="url(#g1)" stroke-width="3"/><rect x="50" y="65" width="130" height="75" rx="3" fill="url(#g1)" opacity=".55"/><path d="M20 156h190l-14 12H34z" fill="#26307a"/><rect x="262" y="60" width="52" height="105" rx="9" fill="#101a4a" stroke="#9b4dff" stroke-width="3"/><rect x="268" y="70" width="40" height="82" rx="3" fill="url(#g1)" opacity=".6"/></svg>`;
+const V={
+home:()=>`<div class="pn hero"><div><h1>Share Files Instantly<br>Between All Your Devices</h1><p>No upload. No size limit. Direct &amp; secure transfer over Wi‑Fi. Works in modern browsers on Windows, Android, iOS, Linux and Mac when both devices use the same Wi‑Fi.</p></div>${art}</div>
+<div class="acts"><button class="ac a1" data-a="go" data-p="send"><span class="tile">${ic('send',22)}</span><span><b>Send Files</b><span class="sub" style="display:block">Select files or folders<br>and send to other device.</span></span><span class="go">${ic('right',16)}</span></button>
+<button class="ac a2" data-a="go" data-p="recv"><span class="tile">${ic('download',22)}</span><span><b>Receive Files</b><span class="sub" style="display:block">Get files from<br>other device.</span></span><span class="go">${ic('right',16)}</span></button>
+<button class="ac a3" data-a="code"><span class="tile">${ic('link',22)}</span><span><b>Connect Device</b><span class="sub" style="display:block">Scan QR code or<br>enter code manually.</span></span><span class="go">${ic('right',16)}</span></button></div>`,
+dev:()=>`<div class="pn"><div class="row"><span class="ib2">${ic('monitor',22)}</span><div><div class="h2">Connected Devices</div><div class="sub">Shows devices currently connected to this room. Scan the QR again to reconnect after closing the page.</div></div><span class="sp"></span><button class="btn" data-a="add">${ic('plus',14)} Add Device</button><button class="btn" data-a="scan">${ic('qr',14)} Scan QR</button><button class="btn pp" data-a="code">${ic('code',14)} Enter Code</button></div>
+<div class="dg">${devs.map(d=>`<div class="dc ${conn===d.id?'cn':''}" role="button" tabindex="0" data-a="conn" data-id="${d.id}"><div class="top"><span class="os">${osi(d.os)}</span><div><b>${esc(d.n)}</b><div class="sub">${esc(d.m)}</div>${d.here?'':`<div class="sub">${esc(d.ip)}</div>`}</div><button class="mb" data-a="dm" data-id="${d.id}" aria-label="Device menu">${ic('more',16)}</button></div><span class="st ${conn===d.id?'on':d.s}"><i></i>${conn===d.id?'Connected':stl[d.s]}</span></div>`).join('')}</div>
+<div class="auto"><button class="tg ${opts.auto?'on':''}" role="switch" aria-checked="${!!opts.auto}" data-a="opt" data-k="auto" aria-label="Auto connect"></button><div><b>Auto connect to known devices</b><div class="sub">Automatically select a device when an active connection is available.</div></div><span class="sp"></span><button class="btn" data-a="clr">${ic('trash',14)||''} Clear all devices</button></div></div>`,
+send:()=>{const t=dv(cur)||{n:'device'},T=[['Files &amp; Folders','file'],['Clipboard Share','clip'],['Text Share','text'],['Apps','apps'],['Entire Folder','folder'],['Camera Files','camera']];
+const bodies=[`<div class="dz" id="dz">${ic('cloud',44)}<b>Drag &amp; drop files or folders here</b><span class="sub">or <a data-a="pf">click to choose files</a></span><div class="row"><button class="btn" data-a="pf">${ic('file',14)} Choose Files</button><button class="btn" data-a="pd">${ic('folder',14)} Choose Folder</button></div></div>`,
+`<div class="pn" style="padding:10px"><textarea class="t" id="cb" placeholder="Paste clipboard text here…"></textarea><div class="row" style="margin-top:8px"><button class="btn" data-a="rcb">Read clipboard</button><button class="btn pri" style="padding:7px 14px;font-size:13px" data-a="addtx" data-s="cb" data-n="clipboard.txt">Add to list</button></div></div>`,
+`<div class="pn" style="padding:10px"><textarea class="t" id="tx" placeholder="Type notes, links or code to send…"></textarea><div class="row" style="margin-top:8px"><button class="btn pri" style="padding:7px 14px;font-size:13px" data-a="addtx" data-s="tx" data-n="text-share.txt">Add to list</button></div></div>`,
+`<div class="dz">${ic('apps',40)}<b>Share installed apps (APK, EXE, DMG…)</b><button class="btn" data-a="pa">Choose app files</button></div>`,
+`<div class="dz">${ic('folder',40)}<b>Send an entire folder</b><button class="btn" data-a="pd">Choose Folder</button></div>`,
+`<div class="dz">${ic('camera',40)}<b>Import photos and videos</b><button class="btn" data-a="pc">Choose or capture</button></div>`];
+return `<div class="pn"><div class="row"><button class="ib" data-a="go" data-p="home" aria-label="Back">${ic('back',16)}</button><span class="h2" style="font-size:17px">Send Files to ${esc(t.n)}</span><span class="sp"></span><button class="btn" data-a="chg">${ic('folder',14)} Change Device</button></div>
+<div class="tabs">${T.map((x,i)=>`<button class="${tab===i?'on':''}" data-a="tab" data-i="${i}">${ic(x[1],14)} ${x[0]}</button>`).join('')}</div>
+<div class="sg"><div>${bodies[tab]}<div class="opt"><span class="ib2" style="color:#3ddc84">${ic('file',16)}</span><div><b>Compress</b><div class="sub">(optional)</div></div><button class="tg ${zip?'on':''}" role="switch" aria-checked="${!!zip}" data-a="zip" aria-label="Compress"></button><span class="ib2" style="color:#c46bff">${ic('lock',16)}</span><div><b>Encrypt</b><div class="sub">(optional)</div></div><button class="tg ${encr?'on':''}" role="switch" aria-checked="${!!encr}" data-a="encr" aria-label="Encrypt"></button><button class="btn" data-a="pw">${pw?'Password set':'Set password'}</button></div></div>
+<div><div class="row"><b>Selected Files (${files.length})</b><span class="sp"></span><button class="btn" style="padding:3px 10px" data-a="clrf">Clear All</button></div><div class="fl">${files.map((f,i)=>`<div class="fr">${fico(f.n)}<div><b>${esc(f.n)}</b><span class="sub">${fmt(f.size)}</span></div><button class="x" data-a="rm" data-i="${i}" aria-label="Remove">×</button></div>`).join('')||'<div class="sub" style="padding:20px;text-align:center">No files selected yet. Add some on the left.</div>'}</div><button class="btn pri" id="sn" data-a="send" style="width:100%;margin-top:12px">${ic('send',16)} Send Now</button></div></div></div>`},
+recv:()=>`<div class="pn"><div class="row"><span class="ib2">${ic('download',22)}</span><div><div class="h2" style="font-size:17px">Receive Files</div><div class="sub">Your device is ready to receive files</div></div><span class="sp"></span><div class="row pn" style="padding:6px 10px"><span>Save to</span><span class="sub" style="color:var(--ink)">${esc(saveName)}</span><button class="btn" data-a="chdir">Change</button></div></div>
+<div class="rg"><div class="pn qrw"><canvas id="qr" width="156" height="156"></canvas><b>Scan with your phone camera</b><span class="sub">The QR opens this page on your phone and joins automatically. Both devices must use the same Wi‑Fi.</span><span class="sub" id="qrstatus">Connecting to local sharing server…</span><span class="sub" id="qrurl" style="max-width:100%;overflow-wrap:anywhere"></span></div>
+<div class="pn"><b>Or use connection code</b><div class="cd">${activeRoom.split('').map(c=>`<span>${c}</span>`).join('')}<button class="btn" style="height:50px" data-a="cp" aria-label="Copy code">${ic('copy',16)}</button></div><div class="sub" style="text-align:center">Use the code only if the QR link cannot be scanned</div></div></div>
+<div class="opts" style="grid-template-columns:repeat(3,1fr);margin-top:12px"><button class="btn" data-a="share">${ic('link',16)} Share link ${ic('down',14)}</button><button class="btn" data-a="url">${ic('wifi',16)} Show local URL</button><button class="btn" data-a="hot">${ic('wifi',16)} Start hotspot</button></div>
+<div class="pn" style="margin-top:12px"><b>Receiving Options</b><div class="opts" style="margin-top:10px">${[['acc','Auto accept files'],['note','Notify on receive'],['org','Organise by device'],['open','Open folder after receive']].map(o=>`<div><span>${o[1]}</span><button class="tg ${opts[o[0]]?'on':''}" role="switch" aria-checked="${!!opts[o[0]]}" data-a="opt" data-k="${o[0]}" aria-label="${o[1]}"></button></div>`).join('')}</div></div></div>`,
+ msg:()=>{const L=devs.filter(d=>!d.here),c=dv(chat)||L[0];if(!c)return `<div class="pn"><div class="h2">Messages</div><p>No connected devices yet. Open Receive Files on this PC and scan its QR code with your phone camera.</p><button class="btn pri" data-a="go" data-p="recv">Open Receive Files</button></div>`;return `<div class="cg"><div class="pn cl"><div class="h2" style="margin-bottom:4px">Recent Chats</div>${L.map(d=>`<button class="ci ${d.id===chat?'on':''}" data-a="chat" data-id="${d.id}"><span class="os" style="width:34px;font-size:22px">${osi(d.os)}</span><span><b>${esc(d.n)}</b><small class="${d.s}-t">${stl[d.s]}</small></span></button>`).join('')}</div>
+ <div class="pn cp"><div class="ch"><span class="os" style="font-size:22px">${osi(c.os)}</span><div><b>Chat with ${esc(c.n)}</b><div class="sub ${c.s}-t">● ${stl[c.s]}</div></div><span class="sp"></span><button class="ib" data-a="tosend" aria-label="Send files">${ic('folder',15)}</button></div><div id="cm"></div>
+ <div class="cin"><button class="ib" data-a="att" aria-label="Attach file">${ic('clipx',16)}</button><input id="mi" placeholder="Type a message…" aria-label="Message"><button class="ib" data-a="emo" aria-label="Emoji">${ic('smile',16)}</button><div class="emo" id="emo">${['😀','👍','🙏','🎉','❤️','😂'].map(e=>`<button data-a="em" data-e="${e}">${e}</button>`).join('')}</div><button class="btn pri" style="width:42px;height:38px;padding:0" data-a="msend" aria-label="Send">${ic('send',16)}</button></div></div></div>`},
+hist:()=>`<div class="hg"><div class="pn"><div class="row"><span style="font-size:18px">⇄</span><div><div class="h2" style="font-size:16px">Transfer History</div><div class="sub">All your sent and received files</div></div></div><div class="row" style="margin:10px 0"><div class="fb" style="margin:0">${['All','Sent','Received','Text','Links','Apps'].map(f=>`<button class="${flt===f?'on':''}" data-a="flt" data-f="${f}">${f}</button>`).join('')}</div><span class="sp"></span><input class="t" id="hs" style="width:150px;padding:5px 9px" placeholder="Search files…" value="${esc(q)}" aria-label="Search history"></div><div id="hl"></div></div>
+<div class="pn"><div class="h2" style="font-size:16px">More Useful Tools</div>${[['clip','Clipboard Share','Share copied text, images instantly','#7a3df0','t1'],['text','Text Share','Send notes, links, code, etc.','#6a4dff','t2'],['apps','App Share (APK)','Share installed apps with others','#22a55e','t3'],['camera','Camera Import','Import photos directly from phone camera','#2f6bff','t5'],['link','Create Download Link','Generate local download link','#f59e0b','tl'],['cast','Screen Cast (Beta)','Share your screen with other device','#7a3df0','tc']].map(t=>`<button class="tl" data-a="tool" data-t="${t[4]}"><span class="fi" style="background:${t[3]};width:34px;height:34px">${ic(t[0],18)}</span><span><b>${t[1]}</b><span class="sub">${t[2]}</span></span></button>`).join('')}</div></div>`,
+set:()=>`<div class="pn" style="max-width:560px"><div class="h2" style="font-size:17px;margin-bottom:10px">Settings</div><label class="sub">This device’s name</label><input class="t" id="un" value="${esc(uname)}" style="margin:4px 0 12px"><div class="row"><button class="btn" data-a="theme" data-t="dark">Dark theme</button><button class="btn" data-a="theme" data-t="light">Light theme</button><button class="btn" data-a="chdir">Change save folder</button><button class="btn" data-a="reset">Reset app data</button></div></div>`,
+about:()=>`<div class="pn" style="max-width:560px"><div class="h2" style="font-size:17px">About</div><p>Two-way File Share. Transfers use a direct WebRTC data channel between devices after local-server signaling. Run Start-File-Share.bat on the PC, connect both devices to the same Wi‑Fi, and scan the QR with the phone camera. File-size limits depend on available memory and browser support.</p></div>`};
+function paintHist(){const el=$('#hl');if(!el)return;const F={All:()=>1,Sent:h=>h.dir==='Sent',Received:h=>h.dir==='Received',Text:h=>h.k==='text',Links:h=>h.k==='link',Apps:h=>h.k==='app'}[flt];const L=hist.map((h,i)=>[h,i]).filter(x=>F(x[0])&&x[0].name.toLowerCase().includes(q.toLowerCase()));
+el.innerHTML=L.map(x=>{const h=x[0];return `<div class="hr">${fico(h.name)}<div><b style="font-weight:500">${esc(h.name)}${h.locked?' 🔒':''}</b><div class="sub">${fmt(h.size)} • ${h.dir==='Sent'?'Sent to':'Received from'} ${esc(h.who)}${h.pending?' • waiting to save':''}</div></div><span class="sub">${h.d}</span><button class="mb" data-a="hm" data-i="${x[1]}" aria-label="Options">${ic('more',16)}</button></div>`}).join('')||'<div class="sub" style="padding:20px;text-align:center">Nothing here yet.</div>'}
+function paintChat(){const el=$('#cm');if(!el)return;el.innerHTML=(ch[chat]||[]).map(m=>m.f?`<div class="fc"><span class="fi" style="background:#f59e0b">${ic('file',16)}</span><div style="flex:1"><b>${esc(m.f.n)}</b><div class="sub">${fmt(m.f.s)} • ${m.d===0?'Sending…':'Completed'}</div></div><span style="color:var(--ok)">${m.d===0?'…':ic('check',18)}</span></div><div class="tm me">${m.t}</div>`:`<div class="bb ${m.m?'me':''}">${esc(m.x)}${m.m?' ✓':''}</div><div class="tm ${m.m?'me':''}">${m.t}</div>`).join('');el.scrollTop=el.scrollHeight}
+function getJoinUrl(){
+ if(location.protocol==='file:')return null;
+ const port=(serverInfo&&serverInfo.port)||location.port||'8765';
+ const host=(serverInfo&&serverInfo.primary_ip)||location.hostname;
+ const path=(!location.pathname||location.pathname==='/')?'/two-way-file-share-fixed.html':location.pathname;
+ return 'http://'+host+':'+port+path+'?join='+encodeURIComponent(activeRoom);
+}
+function paintQR(){
+ const c=$('#qr');if(!c)return;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
+ const status=$('#qrstatus'),url=getJoinUrl();const link=$('#qrurl');
+ if(!url){if(status)status.textContent='This HTML was opened as a local file. Close it and run Start-File-Share.bat on the PC; a file:// QR cannot open on your phone.';if(link)link.textContent='';return}
+ if(link){link.innerHTML='Phone link: <a href="'+esc(url)+'" target="_blank" rel="noopener">'+esc(url)+'</a>'}
+ if(status&&!serverInfo)status.textContent='Finding this PC on your Wi-Fi…';
+ fetch('/api/qr.svg?data='+encodeURIComponent(url)).then(r=>{if(!r.ok)throw new Error('QR service unavailable');return r.blob()}).then(blob=>{const im=new Image();im.onload=()=>{g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(im.src);if(status)status.textContent='Ready. Scan with the phone camera; the page opens and connects automatically.'};im.onerror=()=>{if(status)status.textContent='QR image could not be rendered. Open the Phone link above manually.'};im.src=URL.createObjectURL(blob)}).catch(()=>{if(status)status.textContent='QR generator unavailable. Open the Phone link above manually.'});
+}
+const NAV=[['home','Home','home'],['send','Send Files','send'],['recv','Receive Files','download'],['dev','Devices','monitor'],['msg','Messages','message'],['hist','History','clock'],['set','Settings','settings'],['about','About','info']];
+function render(){$('#nav').innerHTML=NAV.map(n=>`<button class="ni ${page===n[0]?'on':''}" data-a="go" data-p="${n[0]}">${ic(n[2],18)}${n[1]}</button>`).join('');$('#main').innerHTML=V[page]();const c=conn&&dv(conn);$('#ctx').textContent=c?'Connected · '+c.n:'Not connected';$('#cdot').className='dot'+(c?' ok':'');$('#tsub').textContent=page==='home'?'Fast • Private • Same Wi-Fi • Direct Transfer':'';$('#tsub').style.display=page==='home'?'block':'none';paintQR();paintHist();paintChat();const m=$('#mi');if(m)m.onkeydown=e=>{if(e.key==='Enter')A.msend()};const hs=$('#hs');if(hs)hs.oninput=()=>{q=hs.value;paintHist()};const un=$('#un');if(un)un.onchange=()=>{uname=un.value||'Windows PC';sv('uname',uname);dv('pc').n=uname;saveDevs();toast('Device name saved')}}
+function theme(t){document.documentElement.dataset.theme=t;sv('theme',t);$('#bd').classList.toggle('on',t==='dark');$('#bl').classList.toggle('on',t==='light')}
+function connect(id){const d=dv(id);if(!d||d.here)return toast('This is your own device');const dc=channels.get(id);if(!dc||dc.readyState!=='open')return toast('This device is not connected yet. Scan the room QR and wait for the Connected message.','bad');conn=id;cur=id;chat=id;toast('Connected to '+d.n);render()}
+/* ---------- actions ---------- */
+const A={go:a=>{page=a.dataset.p;render()},pf:()=>$('#fi').click(),pd:()=>$('#fd').click(),pa:()=>$('#fa').click(),pc:()=>$('#fc').click(),att:()=>$('#fm').click(),
+rm:a=>{files.splice(+a.dataset.i,1);render()},clrf:()=>{files=[];render()},tab:a=>{tab=+a.dataset.i;render()},send,
+zip:()=>{zip=zip?0:1;render()},encr:()=>{if(!encr&&(!window.crypto||!crypto.subtle))return toast('Browser encryption requires HTTPS or a secure browser context. Transfer without the optional encryption toggle.','bad');encr=encr?0:1;if(encr&&!pw)A.pw();render()},
+pw:()=>modal('Set password','<input class="t" id="pwi" type="password" placeholder="Password for this transfer" aria-label="Password">','Save password',()=>{pw=$('#pwi').value;if(!pw){toast('Enter a password','bad');return false}render()}),
+chg:a=>pm(a,devs.filter(d=>!d.here).map(d=>[d.n+' – '+stl[d.s],()=>{cur=d.id;render()}])),
+rcb:async()=>{try{$('#cb').value=await navigator.clipboard.readText()}catch(e){toast('Clipboard access blocked. Paste into the box instead.','bad')}},
+addtx:a=>addTx($('#'+a.dataset.s).value,a.dataset.n),
+conn:a=>connect(a.dataset.id),
+dm:(a,e)=>{e.stopPropagation();const d=dv(a.dataset.id);pm(a,[['Connect',()=>connect(d.id)],['Send files',()=>{cur=d.id;page='send';render()}],['Message',()=>{chat=d.id;page='msg';render()}],['Rename',()=>modal('Rename device','<input class="t" id="rn" value="'+esc(d.n)+'" aria-label="Name">','Save',()=>{d.n=$('#rn').value||d.n;saveDevs();render()})],['Forget',()=>{if(d.here)return toast('You can’t remove this device','bad');devs=devs.filter(x=>x!==d);if(conn===d.id)conn=null;saveDevs();render()}]])},
+add:()=>modal('Add device','<input class="t" id="an1" placeholder="Device name" aria-label="Device name"><input class="t" id="an2" placeholder="IP address, e.g. 192.168.1.40" aria-label="IP address"><select class="t" id="an3" aria-label="Type"><option value="pc">Computer</option><option value="and">Android</option><option value="app">Apple</option><option value="lin">Linux</option></select>','Add device',()=>{const n=$('#an1').value.trim();if(!n){toast('Enter a device name','bad');return false}devs.push({id:'d'+Date.now(),n,m:'Manual entry — not connected yet',ip:$('#an2').value||'Unknown IP',s:'off',os:$('#an3').value});render()}),
+code:()=>modal('Enter connection code','<input class="t" id="cc" inputmode="numeric" maxlength="6" placeholder="6-digit code" aria-label="Connection code"><div class="sub">The other device must have this app open through the local sharing server. A code cannot connect to an HTML file opened from file://.</div>','Connect',()=>{const c=$('#cc').value.trim();if(c===activeRoom&&signalRole==='host'){toast('That is this device’s own room code','bad');return false}if(!/^\d{6}$/.test(c)){toast('Enter all 6 digits','bad');return false}joinRoom(c)}),
+scan:async()=>{modal('Scan QR code','<video id="vd" autoplay playsinline muted style="width:100%;border-radius:8px;background:#000;min-height:160px"></video><div class="sub" id="sm">Point the camera at the phone-accessible QR code. Use your phone’s normal camera to open the URL directly.</div>');try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('Camera unavailable in this context');stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});const v=$('#vd');v.srcObject=stream;await v.play().catch(()=>{});if(!('BarcodeDetector'in window)){const sm=$('#sm');if(sm)sm.textContent='This browser cannot scan QR internally. Use your phone camera, or enter the 6-digit code.';return}const detector=new BarcodeDetector({formats:['qr_code']});const tick=async()=>{if(!stream)return;try{const r=await detector.detect(v);if(r[0]){let c='';try{const u=new URL(r[0].rawValue);c=u.searchParams.get('join')||((u.hash.match(/(?:^|[#&])c=(\\d{6})/)||[])[1]||'')}catch(e){const m=/(\\d{6})/.exec(r[0].rawValue);if(m)c=m[1]}if(/^\\d{6}$/.test(c)){closeMod();return joinRoom(c)}}}catch(e){}setTimeout(tick,400)};tick()}catch(e){const sm=$('#sm');if(sm)sm.textContent='Camera unavailable here. Use your phone’s camera to scan the QR, or enter the 6-digit code.'}},
+clr:()=>{devs=devs.filter(d=>d.here);conn=null;saveDevs();render();toast('Devices cleared')},
+opt:a=>{const k=a.dataset.k;opts[k]=opts[k]?0:1;sv('opts',opts);if(k==='auto'&&opts.auto){const d=devs.find(x=>!x.here&&channels.get(x.id)?.readyState==='open');if(d)connect(d.id);else toast('No known device is connected yet. Scan the QR first.','bad')}render()},
+cp:()=>copy(activeRoom),
+share:a=>{const u=getJoinUrl();if(!u)return toast('Run Start-File-Share.bat first to create a phone-accessible link.','bad');pm(a,[['Copy link',()=>copy(u)],['Share…',()=>navigator.share?navigator.share({title:'Two-way File Share',url:u}).catch(()=>{}):copy(u)],['Email link',()=>{location.href='mailto:?subject=Two-way File Share&body='+encodeURIComponent(u)}]])},
+url:()=>{const u=getJoinUrl();if(!u)return toast('Run Start-File-Share.bat first to create a phone-accessible link.','bad');modal('Phone URL',`<input class="t" readonly value="${esc(u)}" aria-label="URL"><button class="btn" id="cu">Copy URL</button>`);$('#cu').onclick=()=>copy(u)},
+hot:()=>toast('Browsers can’t start a hotspot. Join both devices to the same Wi‑Fi instead.','bad'),
+chdir:async()=>{if(!window.showDirectoryPicker)return toast('This browser can’t pick a folder, so files go to Downloads.','bad');try{dirH=await showDirectoryPicker({mode:'readwrite'});saveName=dirH.name;sv('save',saveName);render()}catch(e){}},
+chat:a=>{chat=a.dataset.id;render()},
+call:()=>toast('Voice calls are not available between browsers','bad'),tosend:()=>{cur=chat;page='send';render()},
+emo:()=>$('#emo').classList.toggle('show'),em:a=>{$('#mi').value+=a.dataset.e;$('#emo').classList.remove('show');$('#mi').focus()},
+msend:()=>{const i=$('#mi'),v=i.value.trim();if(!v)return;const dc=channels.get(chat);if(!dc||dc.readyState!=='open')return toast('Connect to a real device before sending a message.','bad');dc.send(JSON.stringify({t:'chat',text:v}));(ch[chat]=ch[chat]||[]).push({m:1,x:v,t:tnow()});i.value='';paintChat()},
+flt:a=>{flt=a.dataset.f;render()},
+hm:a=>{const h=hist[+a.dataset.i];pm(a,[h.locked?['Decrypt',()=>modal('Decrypt file','<input class="t" id="dp" type="password" placeholder="Password" aria-label="Password">','Decrypt',async()=>{try{await fin(h,await dec(h.raw,$('#dp').value));h.locked=0;delete h.raw;paintHist();toast('Decrypted '+h.name)}catch(e){toast('Wrong password','bad')}})]:['Save / download',()=>h.url?save(h):toast('The original file data is not available in this browser session','bad')],['Remove',()=>{hist.splice(+a.dataset.i,1);paintHist()}]])},
+tool:a=>{const t=a.dataset.t;if(t[0]==='t'&&t.length===2){tab=+t[1];page='send';render()}else if(t==='tl'){const L=files.filter(f=>f.file);if(!L.length)return toast('Add real files in Send Files first','bad');modal('Download links','<div class="sub">These links work in this browser while this tab stays open.</div>'+L.map(f=>`<a style="color:#8ab4ff;word-break:break-all" href="${URL.createObjectURL(f.file)}" download="${esc(f.n)}">${esc(f.n)}</a>`).join(''))}else navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia?navigator.mediaDevices.getDisplayMedia({video:true}).then(s=>{stream=s;modal('Screen cast (preview)','<video id="sc" autoplay muted style="width:100%;border-radius:8px;background:#000"></video><div class="sub">Local preview. Closing this window stops sharing.</div>');$('#sc').srcObject=s}).catch(()=>{}):toast('Screen capture isn’t supported here','bad')},
+theme:a=>{theme(a.dataset.t)},min:()=>$('#win').classList.toggle('min'),max:()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>toast('Fullscreen is blocked here','bad')),close:()=>toast('A browser tab can’t be closed from inside the app. Close the tab instead.'),
+reset:()=>{try{localStorage.clear()}catch(e){}location.reload()},mx:()=>closeMod()};
+document.addEventListener('click',e=>{const p=$('#pop');if(e.target.closest('#pop button')){const b=e.target.closest('#pop button');const f=p._it[+b.dataset.i][1];p.style.display='none';f();return}p.style.display='none';if(!e.target.closest('.cin'))$('#emo')&&$('#emo').classList.remove('show');if(e.target.id==='mod'){closeMod();return}const a=e.target.closest('[data-a]');if(a&&A[a.dataset.a])A[a.dataset.a](a,e)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();if((e.key==='Enter'||e.key===' ')&&e.target.matches('.dc')){e.preventDefault();connect(e.target.dataset.id)}});
+['fi','fd','fa','fc'].forEach(id=>$('#'+id).onchange=e=>{[...e.target.files].forEach(f=>add(f));e.target.value='';if(page!=='send')page='send';render()});
+$('#fm').onchange=e=>{[...e.target.files].forEach(f=>add(f));e.target.value='';page='send';tab=0;render();toast('Files added. Select Send Now to transfer them.')};
+document.addEventListener('dragover',e=>{const z=e.target.closest&&e.target.closest('#dz');if(z){e.preventDefault();z.classList.add('over')}});
+document.addEventListener('dragleave',e=>{const z=$('#dz');if(z)z.classList.remove('over')});
+document.addEventListener('drop',async e=>{const z=e.target.closest&&e.target.closest('#dz');if(!z)return;e.preventDefault();z.classList.remove('over');const walk=async(en,pre)=>{if(en.isFile)await new Promise(r=>en.file(f=>{add(f,pre+f.name);r()}));else{const rd=en.createReader();let b;do{b=await new Promise(r=>rd.readEntries(r));for(const c of b)await walk(c,pre+en.name+'/')}while(b.length)}};const it=[...e.dataTransfer.items||[]].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);if(it.length)for(const en of it)await walk(en,'');else[...e.dataTransfer.files].forEach(f=>add(f));render()});
+/* ---------- boot ---------- */
+$('#lg').innerHTML=ic('swap',20);$('#bd').innerHTML=ic('moon',15);$('#bl').innerHTML=ic('sun',15);$('#b1').innerHTML=ic('min',14);$('#b2').innerHTML=ic('max',14);$('#b3').innerHTML=ic('x',14);
+theme(ld('theme',matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'));
+dv('pc').n=uname;
+const tick=()=>{const d=new Date();$('#clk').textContent=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'  |  '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})};tick();setInterval(tick,1000);
+render();
+if(joinParam){page='dev';render()}
+(async()=>{
+ if(location.protocol==='file:'){setConnStatus('This HTML is opened as a local file. Start the PC server with Start-File-Share.bat, then scan the QR shown in the browser.','bad');return}
+ try{const r=await fetch('/api/info',{cache:'no-store'});if(!r.ok)throw new Error('server API unavailable');serverInfo=await r.json();paintQR();startSignaling(signalRole,activeRoom)}catch(e){setConnStatus('The sharing server is not running. Extract the package and double-click Start-File-Share.bat on the PC.','bad');toast('Local sharing server not detected.','bad')}
+})();
+})();
+</script></body></html>
